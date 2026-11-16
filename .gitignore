@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m "Implement E-Commerce Catalog Validator Service with Ajv and Postman tests"
+git branch -M main
+git remote add origin https://github.com/<your-username>/ecommerce-catalog-validator.git
+git push -u origin main

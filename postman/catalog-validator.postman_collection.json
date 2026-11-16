@@ -1,0 +1,195 @@
+{
+  "info": {
+    "_postman_id": "a3f9b2c1-4410-4e8a-9b11-db414week0301",
+    "name": "Assignment 3 - E-Commerce Catalog Validator",
+    "description": "Validates POST /api/catalog/items with 1 valid 201 test case and 4 distinct 422 schema violation cases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Valid Catalog Item (201 Created)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Returns validated item data', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.data.sku).to.eql('ELC-4092');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"ELC-4092\",\n  \"name\": \"Wireless Mechanical Keyboard\",\n  \"price\": 129.99,\n  \"tags\": [\"electronics\", \"peripherals\", \"wireless\"],\n  \"vendor\": {\n    \"vendorId\": \"VND-104\",\n    \"name\": \"KeyCraft Supply Co.\",\n    \"contactEmail\": \"orders@keycraft.io\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/catalog/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalog", "items"]
+        }
+      }
+    },
+    {
+      "name": "2. 422 Error - Invalid SKU Regex Pattern",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 422 Unprocessable Entity', function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test('Flags sku pattern error', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.details[0].field).to.eql('sku');",
+              "    pm.expect(json.details[0].constraint).to.eql('pattern');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"bad-sku-99\",\n  \"name\": \"Wireless Mechanical Keyboard\",\n  \"price\": 129.99,\n  \"tags\": [\"electronics\", \"peripherals\"],\n  \"vendor\": {\n    \"vendorId\": \"VND-104\",\n    \"name\": \"KeyCraft Supply Co.\",\n    \"contactEmail\": \"orders@keycraft.io\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/catalog/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalog", "items"]
+        }
+      }
+    },
+    {
+      "name": "3. 422 Error - Price Not Greater Than 0",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 422 Unprocessable Entity', function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test('Flags exclusiveMinimum on price', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.details[0].field).to.eql('price');",
+              "    pm.expect(json.details[0].constraint).to.eql('exclusiveMinimum');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"ELC-4092\",\n  \"name\": \"Wireless Mechanical Keyboard\",\n  \"price\": 0,\n  \"tags\": [\"electronics\"],\n  \"vendor\": {\n    \"vendorId\": \"VND-104\",\n    \"name\": \"KeyCraft Supply Co.\",\n    \"contactEmail\": \"orders@keycraft.io\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/catalog/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalog", "items"]
+        }
+      }
+    },
+    {
+      "name": "4. 422 Error - Duplicate Tags (uniqueItems Violation)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 422 Unprocessable Entity', function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test('Flags duplicate items in tags array', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.details[0].field).to.eql('tags');",
+              "    pm.expect(json.details[0].constraint).to.eql('uniqueItems');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"ELC-4092\",\n  \"name\": \"Wireless Mechanical Keyboard\",\n  \"price\": 129.99,\n  \"tags\": [\"electronics\", \"electronics\"],\n  \"vendor\": {\n    \"vendorId\": \"VND-104\",\n    \"name\": \"KeyCraft Supply Co.\",\n    \"contactEmail\": \"orders@keycraft.io\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/catalog/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalog", "items"]
+        }
+      }
+    },
+    {
+      "name": "5. 422 Error - Invalid Vendor Details (Bad Email & Missing ID)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 422 Unprocessable Entity', function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test('Flags nested vendor validation errors', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.details.length).to.be.at.least(2);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"ELC-4092\",\n  \"name\": \"Wireless Mechanical Keyboard\",\n  \"price\": 129.99,\n  \"tags\": [\"electronics\"],\n  \"vendor\": {\n    \"name\": \"KeyCraft Supply Co.\",\n    \"contactEmail\": \"not-a-valid-email\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/catalog/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "catalog", "items"]
+        }
+      }
+    }
+  ]
+}
